@@ -1,11 +1,14 @@
 <template>
   <q-page class="flex flex-center bg-red-5 text-white">
     <div class="container">
+
+      <audio src="../statics/alert.WAV" v-show="false" ref="audio" />
+
       <q-knob
         v-model="totalTime"
         :min="0"
         :max="displayed"
-        :size="this.$q.platform.is.mobile ? '310px' : '400px'"
+        :size="$q.platform.is.mobile ? '310px' : '400px'"
         line-width="1px"
         track-color="red-5"
         readonly
@@ -146,11 +149,23 @@ export default {
         })
         return
       }
-      await localStorage.setItem('currentTimer', this.timeSet * 60)
       this.totalTime = await this.timeSet * 60
       this.displayed = await this.totalTime
+      await localStorage.setItem('currentTimer', this.timeSet * 60)
       this.edit = false
       this.selectTimer = false
+    },
+    onStopTimer: async function() {
+      this.totalTime = await Number(localStorage.getItem('currentBreak')) || 5 * 60
+      this.displayed = await this.totalTime
+      this.pause = true
+      this.startTimer()
+    },
+    onStopBreak: async function() {
+      this.totalTime = await Number(localStorage.getItem('currentTimer')) || 25 * 60
+      this.displayed = await this.totalTime
+      this.pause = false
+      this.startTimer()
     }
   },
   computed: {
@@ -193,17 +208,24 @@ export default {
   watch: {
     totalTime(value) {
       if(value === 0 && !this.pause) {
-        let notify = new Notification('Vibration Sample', {
-          body: 'Buzz! Buzz!',
-          icon: 'https://picsum.photos/200',
-          vibrate: [200, 100, 200, 100, 200, 100, 200],
-          tag: 'vibration-sample'
+        this.$refs.audio.play()
+
+        let notify = new Notification('Vamos fazer uma pausa?', {
+          body: 'Agora pode se levantar ou descansar',
+          vibrate: [500, 100, 500, 100, 200, 100, 200],
+          tag: 'pausa'
         });
+
+        if(this.$q.platform.is.mobile) {
+          let r = confirm("Deseja fazer uma pausa agora?");
+          if (r) this.onStopTimer()
+        }
+
         this.$q.notify({
           message: `Vamos fazer uma pausa?`,
           timeout: 0, // in milliseconds; 0 means no timeout
           color: 'black',
-          position: 'top-right', // 'top', 'left', 'bottom-left' etc.
+          position: 'center', // 'top', 'left', 'bottom-left' etc.
           closeBtn: true,
           actions: [
             {
@@ -211,8 +233,9 @@ export default {
               icon: 'timer',
               handler: async () => {
                 this.totalTime = await Number(localStorage.getItem('currentBreak')) || 5 * 60
-                this.displayed = this.totalTime
+                this.displayed = await this.totalTime
                 this.pause = true
+                this.startTimer()
               }
             }
           ]
@@ -220,21 +243,37 @@ export default {
         clearInterval(this.timer)
         this.timer = null
       }
+
+      // Pausa
       if(value === 0 && this.pause) {
+        this.$refs.audio.play()
+
+        var notify = new Notification('Vamos voltar para o foco!', {
+          body: 'Acione novamente o tempo e se concentre!',
+          vibrate: [500, 100, 1000],
+          tag: 'pausa'
+        });
+
+        if(this.$q.platform.is.mobile) {
+          var r = confirm("Vamos voltar ao foco!");
+          if (r) this.onStopBreak();
+        }
+
         this.$q.notify({
           message: `Vamos voltar ao foco!`,
           timeout: 0, // in milliseconds; 0 means no timeout
           color: 'black',
-          position: 'top-right', // 'top', 'left', 'bottom-left' etc.
+          position: 'center', // 'top', 'left', 'bottom-left' etc.
           closeBtn: true,
           actions: [
             {
               label: 'Voltar ao foco',
               icon: 'timer',
               handler: async () => {
-                this.totalTime = await localStorage.getItem('currentTimer') || 25 * 60
-                this.displayed = this.totalTime
+                this.totalTime = await Number(localStorage.getItem('currentTimer')) || 25 * 60
+                this.displayed = await this.totalTime
                 this.pause = false
+                this.startTimer()
               }
             }
           ]
@@ -245,29 +284,25 @@ export default {
     }
   },
   mounted() {
-    setInterval(async () => {
-      if(!this.resetButton && this.timer === null) {
-        this.totalTime = await Number(localStorage.getItem('currentTimer')) || 25 * 60
-        this.displayed = this.totalTime
+    const monitor=setInterval(async () => {
+      if(!this.resetButton&&this.timer===null) {
+        this.totalTime=await Number(localStorage.getItem('currentTimer'))||25*60;
+        this.displayed=this.totalTime;
       }
-    }, 1000)
+    },1000);
   },
   created() {
     if (window.Notification && Notification.permission !== "granted") {
-    //(Notification.permission === 'denied' || Notification.permission === "default") {
       Notification.requestPermission(function (permission) {
         if (permission === "granted") {
           return new Notification("Permissão para receber notificações concedida",{
-            icon: 'https://picsum.photos/200'
+            icon: 'https://pomodoro-timer-996c1.firebaseapp.com/statics/icon.png'
           });
         }
       });
     }
+
   }
 
 };
 </script>
-
-<style>
-
-</style>

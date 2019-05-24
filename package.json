@@ -7,7 +7,9 @@
   "author": "Rodrigo Alves <igo.sud@hotmail.com>",
   "private": true,
   "scripts": {
-    "dev": "quasar dev -m pwa"
+    "dev": "quasar dev -m pwa",
+    "build": "quasar build -m pwa",
+    "deploy": "quasar build -m pwa && firebase deploy"
   },
   "dependencies": {
     "axios": "^0.18.0",

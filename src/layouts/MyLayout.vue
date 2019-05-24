@@ -53,9 +53,11 @@
               </center>
               <q-input
                 color="black"
+                v-if="$q.platform.is.desktop"
                 type="number"
                 v-model="newTimer"
                 float-label="Novo temporizador"
+                placeholder="Em minutos"
                 @keyup.enter="addTimer"
                 :after="[
                   {
@@ -66,6 +68,20 @@
                   }
                 ]"
               />
+              <q-input
+                color="black"
+                v-else
+                type="number"
+                v-model="newTimer"
+                float-label="Novo temporizador"
+                placeholder="Em minutos"
+                @keyup.enter="addTimer"
+              />
+              <q-btn class="full-width q-mt-md"
+                     color="faded"
+                     label="Adicionar"
+                     v-show="$q.platform.is.mobile"
+                     @click="addTimer" />
 
             </q-collapsible>
           </q-item-main>
@@ -76,7 +92,7 @@
               <div>
                 <q-chip color="primary" small class="q-ma-sm">
                   <q-icon name="timelapse" />
-                  Custom
+                  Atual: {{currentBreak / 60}}:00
                 </q-chip>
               </div>
 
@@ -93,11 +109,14 @@
                   <q-btn color="red" flat round icon="clear" @click="deleteBreak(index)" />
                 </div>
               </center>
+
               <q-input
                 color="black"
+                v-if="$q.platform.is.desktop"
                 type="number"
-                v-model="newBreak"
+                v-model="newTimer"
                 float-label="Novo temporizador"
+                placeholder="Em minutos"
                 @keyup.enter="addBreak"
                 :after="[
                   {
@@ -108,6 +127,20 @@
                   }
                 ]"
               />
+              <q-input
+                color="black"
+                v-else
+                type="number"
+                v-model="newTimer"
+                float-label="Novo temporizador"
+                placeholder="Em minutos"
+                @keyup.enter="addBreak"
+              />
+              <q-btn class="full-width q-mt-md"
+                     color="faded"
+                     label="Adicionar"
+                     v-show="$q.platform.is.mobile"
+                     @click="addBreak" />
 
             </q-collapsible>
           </q-item-main>
@@ -134,7 +167,8 @@ export default {
       newTimer: '',
       newBreak: '',
       timerList: JSON.parse(localStorage.getItem('timerList')) || [],
-      breakList: JSON.parse(localStorage.getItem('breakList')) || []
+      breakList: JSON.parse(localStorage.getItem('breakList')) || [],
+      currentBreak: Number(localStorage.getItem('currentBreak')) || 5 * 60
     }
   },
   methods: {
