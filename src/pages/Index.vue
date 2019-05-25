@@ -108,8 +108,7 @@ export default {
       displayed: Number(localStorage.getItem('currentTimer')) || 25 * 60,
       pause: false,
       selectTimer: false,
-
-    };
+    }
   },
   methods: {
     startTimer() {
@@ -157,13 +156,13 @@ export default {
     },
     onStopTimer: async function() {
       this.totalTime = await Number(localStorage.getItem('currentBreak')) || 5 * 60
-      this.displayed = await this.totalTime
+      this.displayed = this.totalTime
       this.pause = true
       this.startTimer()
     },
     onStopBreak: async function() {
       this.totalTime = await Number(localStorage.getItem('currentTimer')) || 25 * 60
-      this.displayed = await this.totalTime
+      this.displayed = this.totalTime
       this.pause = false
       this.startTimer()
     }
@@ -207,39 +206,45 @@ export default {
   },
   watch: {
     totalTime(value) {
+      // Timer
       if(value === 0 && !this.pause) {
         this.$refs.audio.play()
 
-        let notify = new Notification('Vamos fazer uma pausa?', {
+        const rest = new Notification('Vamos fazer uma pausa?', {
           body: 'Agora pode se levantar ou descansar',
           vibrate: [500, 100, 500, 100, 200, 100, 200],
           tag: 'pausa'
         });
 
+        rest.onclick = function() {
+          window.focus()
+        }
+
         if(this.$q.platform.is.mobile) {
           let r = confirm("Deseja fazer uma pausa agora?");
           if (r) this.onStopTimer()
         }
-
-        this.$q.notify({
-          message: `Vamos fazer uma pausa?`,
-          timeout: 0, // in milliseconds; 0 means no timeout
-          color: 'black',
-          position: 'center', // 'top', 'left', 'bottom-left' etc.
-          closeBtn: true,
-          actions: [
-            {
-              label: 'Fazer uma pausa',
-              icon: 'timer',
-              handler: async () => {
-                this.totalTime = await Number(localStorage.getItem('currentBreak')) || 5 * 60
-                this.displayed = await this.totalTime
-                this.pause = true
-                this.startTimer()
+        else {
+          this.$q.notify({
+            message: `Vamos fazer uma pausa?`,
+            timeout: 0, // in milliseconds; 0 means no timeout
+            color: 'black',
+            position: 'center', // 'top', 'left', 'bottom-left' etc.
+            closeBtn: true,
+            actions: [
+              {
+                label: 'Fazer uma pausa',
+                icon: 'timer',
+                handler: async () => {
+                  this.totalTime = await Number(localStorage.getItem('currentBreak')) || 5 * 60
+                  this.displayed = await this.totalTime
+                  this.pause = true
+                  this.startTimer()
+                }
               }
-            }
-          ]
-        })
+            ]
+          })
+        }
         clearInterval(this.timer)
         this.timer = null
       }
@@ -248,49 +253,54 @@ export default {
       if(value === 0 && this.pause) {
         this.$refs.audio.play()
 
-        var notify = new Notification('Vamos voltar para o foco!', {
+        var focuses = new Notification('Vamos voltar para o foco!', {
           body: 'Acione novamente o tempo e se concentre!',
           vibrate: [500, 100, 1000],
-          tag: 'pausa'
+          tag: 'focus'
         });
+
+        focuses.onclick = function() {
+          window.focus()
+        }
 
         if(this.$q.platform.is.mobile) {
           var r = confirm("Vamos voltar ao foco!");
           if (r) this.onStopBreak();
         }
-
-        this.$q.notify({
-          message: `Vamos voltar ao foco!`,
-          timeout: 0, // in milliseconds; 0 means no timeout
-          color: 'black',
-          position: 'center', // 'top', 'left', 'bottom-left' etc.
-          closeBtn: true,
-          actions: [
-            {
-              label: 'Voltar ao foco',
-              icon: 'timer',
-              handler: async () => {
-                this.totalTime = await Number(localStorage.getItem('currentTimer')) || 25 * 60
-                this.displayed = await this.totalTime
-                this.pause = false
-                this.startTimer()
+        else {
+          this.$q.notify({
+            message: `Vamos voltar ao foco!`,
+            timeout: 0, // in milliseconds; 0 means no timeout
+            color: 'black',
+            position: 'center', // 'top', 'left', 'bottom-left' etc.
+            closeBtn: true,
+            actions: [
+              {
+                label: 'Voltar ao foco',
+                icon: 'timer',
+                handler: async () => {
+                  this.totalTime = await Number(localStorage.getItem('currentTimer')) || 25 * 60
+                  this.displayed = await this.totalTime
+                  this.pause = false
+                  this.startTimer()
+                }
               }
-            }
-          ]
-        })
+            ]
+          })
+        }
         clearInterval(this.timer)
         this.timer = null
       }
     }
   },
-  mounted() {
-    const monitor=setInterval(async () => {
-      if(!this.resetButton&&this.timer===null) {
-        this.totalTime=await Number(localStorage.getItem('currentTimer'))||25*60;
-        this.displayed=this.totalTime;
-      }
-    },1000);
-  },
+  // mounted() {
+  //   const monitor=setInterval(async () => {
+  //     if(!this.resetButton&&this.timer===null) {
+  //       this.totalTime=await Number(localStorage.getItem('currentTimer'))||25*60;
+  //       this.displayed=this.totalTime;
+  //     }
+  //   },1000);
+  // },
   created() {
     if (window.Notification && Notification.permission !== "granted") {
       Notification.requestPermission(function (permission) {
