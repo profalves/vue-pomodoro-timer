@@ -78,6 +78,7 @@ module.exports = function (ctx) {
         name: 'Pomodoro Timer',
         short_name: 'Timer',
         // description: 'Best PWA App!',
+        prefer_related_applications: true,
         display: 'standalone',
         orientation: 'portrait',
         background_color: '#fb324a',
