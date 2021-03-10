@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "quasar dev -m pwa",
     "build": "quasar build -m pwa",
-    "deploy": "quasar build -m pwa && firebase deploy"
+    "deploy": "quasar build -m pwa && npx firebase deploy"
   },
   "dependencies": {
     "axios": "^0.18.0",
